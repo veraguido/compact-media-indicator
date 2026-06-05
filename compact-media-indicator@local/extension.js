@@ -105,10 +105,13 @@ class MediaIndicator extends PanelMenu.Button {
             style_class: 'cmi-box',
             x_align: Clutter.ActorAlign.CENTER,
             y_align: Clutter.ActorAlign.CENTER,
+            x_expand: false,
+            y_expand: false,
         });
         this._statusIcon = new St.Icon({
-            style_class: 'system-status-icon cmi-status-icon',
+            style_class: 'cmi-status-icon',
             icon_name: DEFAULT_ICON,
+            icon_size: 16,
             x_align: Clutter.ActorAlign.CENTER,
             y_align: Clutter.ActorAlign.CENTER,
         });
@@ -187,12 +190,9 @@ class MediaIndicator extends PanelMenu.Button {
         // Status icon size (explicit icon-size in the inline style overrides the
         // 16px from the system-status-icon CSS class).
         const iconSize = this._settings.get_int('status-icon-size');
-        if (iconSize > 0) {
-            this._statusIcon.icon_size = iconSize;
-            this._statusIcon.set_style(`icon-size: ${iconSize}px;`);
-        } else {
-            this._statusIcon.set_style(null);
-        }
+        const resolvedSize = iconSize > 0 ? iconSize : 16;
+        this._statusIcon.icon_size = resolvedSize;
+        this._statusIcon.set_style(`icon-size: ${resolvedSize}px;`);
 
         const size = this._artSize();
         this._art.icon_size = size;
