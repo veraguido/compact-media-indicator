@@ -1,5 +1,10 @@
 .cmi-box {
     spacing: 4px;
+    padding: 0 4px;
+}
+
+.cmi-status-icon {
+    padding: 0;
 }
 
 .cmi-album-art {
