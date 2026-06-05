@@ -1,0 +1,68 @@
+.cmi-box {
+    spacing: 4px;
+}
+
+.cmi-album-art {
+    border-radius: 4px;
+    background-size: cover;
+}
+
+.cmi-popup-root {
+    spacing: 10px;
+    padding: 4px;
+    min-width: 260px;
+}
+
+.cmi-popup-header {
+    spacing: 8px;
+}
+
+.cmi-popup-player {
+    font-weight: bold;
+}
+
+.cmi-controls {
+    spacing: 6px;
+    padding-top: 2px;
+}
+
+.cmi-control-button {
+    padding: 6px;
+    border-radius: 999px;
+}
+
+.cmi-control-disabled {
+    opacity: 0.35;
+}
+
+.cmi-info-content {
+    spacing: 12px;
+}
+
+.cmi-info-art {
+    border-radius: 6px;
+    background-color: rgba(127, 127, 127, 0.15);
+}
+
+.cmi-info-text {
+    spacing: 4px;
+}
+
+.cmi-info-title {
+    font-weight: bold;
+    font-size: 1.1em;
+    padding-bottom: 2px;
+}
+
+.cmi-info-row {
+    spacing: 8px;
+}
+
+.cmi-info-key {
+    font-weight: bold;
+    min-width: 60px;
+}
+
+.cmi-info-value {
+    color: rgba(255, 255, 255, 0.85);
+}

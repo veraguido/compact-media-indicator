@@ -1,0 +1,10 @@
+{
+  "uuid": "compact-media-indicator@local",
+  "name": "Compact Media Indicator",
+  "description": "A compact MPRIS media indicator for the top panel. Shows a status icon that changes with playback state and (optionally) the current album art beside it. Mouse buttons (left/right/middle/back/forward) are individually configurable. Works in horizontal and vertical panel layouts, placing the album art to the right or below the status icon accordingly.",
+  "shell-version": ["45", "46", "47", "48", "49", "50"],
+  "settings-schema": "org.gnome.shell.extensions.compact-media-indicator",
+  "gettext-domain": "compact-media-indicator",
+  "url": "",
+  "version": 1
+}

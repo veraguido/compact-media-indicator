@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="compact-media-indicator">
+
+  <enum id="org.gnome.shell.extensions.compact-media-indicator.action">
+    <value nick="none"          value="0"/>
+    <value nick="play-pause"    value="1"/>
+    <value nick="next"          value="2"/>
+    <value nick="previous"      value="3"/>
+    <value nick="stop"          value="4"/>
+    <value nick="seek-forward"  value="5"/>
+    <value nick="seek-backward" value="6"/>
+    <value nick="raise"         value="7"/>
+    <value nick="next-player"   value="8"/>
+    <value nick="show-info"     value="9"/>
+  </enum>
+
+  <enum id="org.gnome.shell.extensions.compact-media-indicator.orientation">
+    <value nick="auto"       value="0"/>
+    <value nick="horizontal" value="1"/>
+    <value nick="vertical"   value="2"/>
+  </enum>
+
+  <schema id="org.gnome.shell.extensions.compact-media-indicator"
+          path="/org/gnome/shell/extensions/compact-media-indicator/">
+
+    <key name="action-left" enum="org.gnome.shell.extensions.compact-media-indicator.action">
+      <default>'play-pause'</default>
+      <summary>Left click action</summary>
+    </key>
+
+    <key name="action-right" enum="org.gnome.shell.extensions.compact-media-indicator.action">
+      <default>'next'</default>
+      <summary>Right click action</summary>
+    </key>
+
+    <key name="action-middle" enum="org.gnome.shell.extensions.compact-media-indicator.action">
+      <default>'previous'</default>
+      <summary>Middle click action</summary>
+    </key>
+
+    <key name="action-back" enum="org.gnome.shell.extensions.compact-media-indicator.action">
+      <default>'seek-backward'</default>
+      <summary>Back (button 8) action</summary>
+    </key>
+
+    <key name="action-forward" enum="org.gnome.shell.extensions.compact-media-indicator.action">
+      <default>'seek-forward'</default>
+      <summary>Forward (button 9) action</summary>
+    </key>
+
+    <key name="layout-orientation" enum="org.gnome.shell.extensions.compact-media-indicator.orientation">
+      <default>'auto'</default>
+      <summary>Panel layout orientation</summary>
+      <description>auto detects the panel orientation; horizontal places the album art to the right of the icon; vertical places it below.</description>
+    </key>
+
+    <key name="status-icon-size" type="i">
+      <default>22</default>
+      <summary>Status icon size in pixels (0 = panel default)</summary>
+      <range min="0" max="64"/>
+    </key>
+
+    <key name="show-album-art" type="b">
+      <default>true</default>
+      <summary>Show album art when available</summary>
+    </key>
+
+    <key name="album-art-size" type="i">
+      <default>0</default>
+      <summary>Album art size in pixels (0 = match panel size)</summary>
+      <range min="0" max="256"/>
+    </key>
+
+    <key name="seek-seconds" type="i">
+      <default>5</default>
+      <summary>Seconds to seek for seek actions</summary>
+      <range min="1" max="120"/>
+    </key>
+
+    <key name="hide-when-no-player" type="b">
+      <default>true</default>
+      <summary>Hide the indicator entirely when no MPRIS player is present</summary>
+    </key>
+
+    <key name="blocklist" type="as">
+      <default>[]</default>
+      <summary>Players excluded from the indicator</summary>
+      <description>Matched case-insensitively against a player's bus name, desktop entry, or identity.</description>
+    </key>
+
+  </schema>
+</schemalist>
