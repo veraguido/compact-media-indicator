@@ -2,9 +2,25 @@
     spacing: 4px;
 }
 
+.cmi-status-circle {
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 999px;
+    padding: 3px;
+    margin: 4px;
+}
+
+.cmi-status-icon {
+    color: rgba(0, 0, 0, 0.82);
+}
+
 .cmi-album-art {
     border-radius: 4px;
     background-size: cover;
+}
+
+.cmi-track-label {
+    padding: 0 2px 0 4px;
+    font-size: 0.85em;
 }
 
 .cmi-popup-root {

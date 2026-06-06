@@ -14,6 +14,12 @@
     <value nick="show-info"     value="9"/>
   </enum>
 
+  <enum id="org.gnome.shell.extensions.compact-media-indicator.panel-box">
+    <value nick="left"   value="0"/>
+    <value nick="center" value="1"/>
+    <value nick="right"  value="2"/>
+  </enum>
+
   <enum id="org.gnome.shell.extensions.compact-media-indicator.orientation">
     <value nick="auto"       value="0"/>
     <value nick="horizontal" value="1"/>
@@ -46,6 +52,12 @@
     <key name="action-forward" enum="org.gnome.shell.extensions.compact-media-indicator.action">
       <default>'seek-forward'</default>
       <summary>Forward (button 9) action</summary>
+    </key>
+
+    <key name="panel-position" enum="org.gnome.shell.extensions.compact-media-indicator.panel-box">
+      <default>'right'</default>
+      <summary>Panel box where the indicator is placed</summary>
+      <description>left, center, or right panel box. Takes effect after disabling and re-enabling.</description>
     </key>
 
     <key name="layout-orientation" enum="org.gnome.shell.extensions.compact-media-indicator.orientation">
@@ -86,6 +98,12 @@
       <default>[]</default>
       <summary>Players excluded from the indicator</summary>
       <description>Matched case-insensitively against a player's bus name, desktop entry, or identity.</description>
+    </key>
+
+    <key name="max-indicator-width" type="i">
+      <default>200</default>
+      <summary>Maximum indicator width in pixels (horizontal mode only, 0 = no limit)</summary>
+      <range min="0" max="800"/>
     </key>
 
   </schema>

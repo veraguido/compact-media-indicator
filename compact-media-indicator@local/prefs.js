@@ -70,6 +70,12 @@ const ORIENTATIONS = [
     {id: 'vertical',   label: 'Vertical (art below)'},
 ];
 
+const PANEL_POSITIONS = [
+    {id: 'left',   label: 'Left'},
+    {id: 'center', label: 'Center'},
+    {id: 'right',  label: 'Right'},
+];
+
 function makeStringList(items) {
     const list = new Gtk.StringList();
     for (const item of items)
@@ -110,6 +116,11 @@ export default class CompactMediaIndicatorPrefs extends ExtensionPreferences {
         const layoutGroup = new Adw.PreferencesGroup({title: 'Layout'});
         appearance.add(layoutGroup);
 
+        const panelPosRow = comboRow('Panel position',
+            'Which section of the panel the indicator appears in', PANEL_POSITIONS);
+        bindCombo(settings, 'panel-position', panelPosRow, PANEL_POSITIONS);
+        layoutGroup.add(panelPosRow);
+
         const orientationRow = comboRow('Orientation',
             'How the album art is placed relative to the status icon', ORIENTATIONS);
         bindCombo(settings, 'layout-orientation', orientationRow, ORIENTATIONS);
@@ -143,6 +154,17 @@ export default class CompactMediaIndicatorPrefs extends ExtensionPreferences {
         });
         settings.bind('album-art-size', artSizeRow, 'value', Gio.SettingsBindFlags.DEFAULT);
         artGroup.add(artSizeRow);
+
+        const labelGroup = new Adw.PreferencesGroup({title: 'Track label'});
+        appearance.add(labelGroup);
+
+        const maxWidthRow = new Adw.SpinRow({
+            title: 'Max indicator width',
+            subtitle: 'Pixels (horizontal mode only · 0 = no limit)',
+            adjustment: new Gtk.Adjustment({lower: 0, upper: 800, step_increment: 10, page_increment: 50}),
+        });
+        settings.bind('max-indicator-width', maxWidthRow, 'value', Gio.SettingsBindFlags.DEFAULT);
+        labelGroup.add(maxWidthRow);
 
         const behaviorGroup = new Adw.PreferencesGroup({title: 'Behavior'});
         appearance.add(behaviorGroup);

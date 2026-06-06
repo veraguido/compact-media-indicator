@@ -8,6 +8,7 @@ import St from 'gi://St';
 import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
+import Pango from 'gi://Pango';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
@@ -108,6 +109,17 @@ class MediaIndicator extends PanelMenu.Button {
             x_expand: false,
             y_expand: false,
         });
+
+        // Circle background behind status icon: foreground-coloured circle with
+        // icon rendered in the panel background colour for a "cut-out" look.
+        this._statusCircle = new St.Widget({
+            style_class: 'cmi-status-circle',
+            layout_manager: new Clutter.BinLayout(),
+            x_align: Clutter.ActorAlign.CENTER,
+            y_align: Clutter.ActorAlign.CENTER,
+            x_expand: false,
+            y_expand: false,
+        });
         this._statusIcon = new St.Icon({
             style_class: 'cmi-status-icon',
             icon_name: DEFAULT_ICON,
@@ -115,6 +127,8 @@ class MediaIndicator extends PanelMenu.Button {
             x_align: Clutter.ActorAlign.CENTER,
             y_align: Clutter.ActorAlign.CENTER,
         });
+        this._statusCircle.add_child(this._statusIcon);
+
         this._art = new St.Icon({
             style_class: 'cmi-album-art',
             visible: false,
@@ -122,8 +136,18 @@ class MediaIndicator extends PanelMenu.Button {
             y_align: Clutter.ActorAlign.CENTER,
         });
 
-        this._box.add_child(this._statusIcon);
+        this._trackLabel = new St.Label({
+            style_class: 'cmi-track-label',
+            text: '',
+            y_align: Clutter.ActorAlign.CENTER,
+            visible: false,
+            x_expand: true,
+        });
+        this._trackLabel.clutter_text.ellipsize = Pango.EllipsizeMode.END;
+
+        this._box.add_child(this._statusCircle);
         this._box.add_child(this._art);
+        this._box.add_child(this._trackLabel);
         this.add_child(this._box);
 
         // Dispatch every mouse button ourselves. We use the button-press-event
@@ -181,14 +205,12 @@ class MediaIndicator extends PanelMenu.Button {
 
     _applyLayout() {
         const vertical = this._detectVertical();
-        // Use the layout manager's orientation; St.BoxLayout.vertical is
-        // deprecated and logs a noisy backtrace on every set.
+        this._isVertical = vertical;
+
         this._box.layout_manager.orientation = vertical
             ? Clutter.Orientation.VERTICAL
             : Clutter.Orientation.HORIZONTAL;
 
-        // Status icon size (explicit icon-size in the inline style overrides the
-        // 16px from the system-status-icon CSS class).
         const iconSize = this._settings.get_int('status-icon-size');
         const resolvedSize = iconSize > 0 ? iconSize : 16;
         this._statusIcon.icon_size = resolvedSize;
@@ -198,7 +220,13 @@ class MediaIndicator extends PanelMenu.Button {
         this._art.icon_size = size;
         this._art.set_style(`min-width: ${size}px; min-height: ${size}px;`);
 
-        // Re-evaluate visibility / art for the new settings.
+        // Track label and max-width only apply in horizontal mode.
+        const maxWidth = this._settings.get_int('max-indicator-width');
+        if (!vertical && maxWidth > 0)
+            this._box.set_style(`max-width: ${maxWidth}px;`);
+        else
+            this._box.set_style(null);
+
         this._lastArtUrl = null;
         this._sync();
     }
@@ -423,6 +451,8 @@ class MediaIndicator extends PanelMenu.Button {
         if (!hasPlayer) {
             this._statusIcon.icon_name = DEFAULT_ICON;
             this._setArtVisible(false);
+            this._trackLabel.text = '';
+            this._trackLabel.visible = false;
             return;
         }
 
@@ -431,6 +461,11 @@ class MediaIndicator extends PanelMenu.Button {
 
         const metadata = this._mpris.getMetadata();
         this._updateArt(metadata['mpris:artUrl']);
+
+        const title = metadata['xesam:title'];
+        const titleStr = title ? String(title) : '';
+        this._trackLabel.text = titleStr;
+        this._trackLabel.visible = !this._isVertical && titleStr !== '';
     }
 
     _updateArt(url) {
@@ -490,11 +525,31 @@ class MediaIndicator extends PanelMenu.Button {
 
 export default class CompactMediaIndicatorExtension extends Extension {
     enable() {
+        this._settings = this.getSettings();
+        this._posChangedId = this._settings.connect('changed::panel-position',
+            () => this._recreateIndicator());
+        this._createIndicator();
+    }
+
+    _createIndicator() {
+        const box = this._settings.get_string('panel-position');
         this._indicator = new MediaIndicator(this);
-        Main.panel.addToStatusArea(this.uuid, this._indicator);
+        Main.panel.addToStatusArea(this.uuid, this._indicator, 0, box);
+    }
+
+    _recreateIndicator() {
+        this._indicator?.destroy();
+        this._indicator = null;
+        delete Main.panel.statusArea[this.uuid];
+        this._createIndicator();
     }
 
     disable() {
+        if (this._posChangedId) {
+            this._settings.disconnect(this._posChangedId);
+            this._posChangedId = 0;
+        }
+        this._settings = null;
         this._indicator?.destroy();
         this._indicator = null;
     }
