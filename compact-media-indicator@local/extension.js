@@ -26,9 +26,9 @@ const BUTTON_FORWARD = 9;
 
 // Status icon names per playback state.
 const STATUS_ICONS = {
-    'Playing': 'media-playback-start-symbolic',
-    'Paused': 'media-playback-pause-symbolic',
-    'Stopped': 'media-playback-stop-symbolic',
+    'Playing': 'media-playback-pause-symbolic',
+    'Paused': 'media-playback-start-symbolic',
+    'Stopped': 'media-playback-start-symbolic',
 };
 const DEFAULT_ICON = 'audio-x-generic-symbolic';
 
