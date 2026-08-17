@@ -22,62 +22,99 @@
     padding: 0 2px 0 4px;
 }
 
-.cmi-popup-root {
-    spacing: 10px;
-    padding: 4px;
-    min-width: 260px;
+/* ── Popup item wrapper ─────────────────────────────── */
+.cmi-popup {
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: none;
+    box-shadow: none;
 }
 
+/* ── Popup root: receives the album art as background-image via JS ── */
+.cmi-popup-root {
+    border-radius: 12px;
+}
+
+/* ── Dark overlay that dims the art so text stays readable ── */
+.cmi-popup-overlay {
+    background-color: rgba(6, 6, 14, 0.50);
+    border-radius: 12px;
+}
+
+/* ── Content layer: padding + spacing for everything inside ── */
+.cmi-popup-content {
+    spacing: 12px;
+    padding: 12px 14px 14px;
+    min-width: 290px;
+}
+
+/* ── Header: player name / source switcher ── */
 .cmi-popup-header {
-    spacing: 8px;
+    spacing: 6px;
 }
 
 .cmi-popup-player {
     font-weight: bold;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.82em;
 }
 
-.cmi-controls {
-    spacing: 6px;
-    padding-top: 2px;
-}
-
-.cmi-control-button {
-    padding: 6px;
-    border-radius: 999px;
-}
-
-.cmi-control-disabled {
-    opacity: 0.35;
-}
-
+/* ── Now-playing row ── */
 .cmi-info-content {
-    spacing: 12px;
+    spacing: 14px;
 }
 
 .cmi-info-art {
-    border-radius: 6px;
-    background-color: rgba(127, 127, 127, 0.15);
+    border-radius: 8px;
+    background-color: rgba(0, 0, 0, 0.3);
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.55);
 }
 
 .cmi-info-text {
-    spacing: 4px;
+    spacing: 3px;
 }
 
 .cmi-info-title {
     font-weight: bold;
     font-size: 1.1em;
+    color: white;
     padding-bottom: 2px;
 }
 
-.cmi-info-row {
-    spacing: 8px;
-}
-
-.cmi-info-key {
-    font-weight: bold;
-    min-width: 60px;
-}
-
 .cmi-info-value {
-    color: rgba(255, 255, 255, 0.85);
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.95em;
+}
+
+.cmi-info-album {
+    color: rgba(255, 255, 255, 0.48);
+    font-size: 0.88em;
+}
+
+/* ── Transport controls ── */
+.cmi-controls {
+    spacing: 8px;
+    padding-top: 4px;
+}
+
+.cmi-control-button {
+    padding: 8px;
+    border-radius: 999px;
+    background-color: rgba(255, 255, 255, 0.13);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: rgba(255, 255, 255, 0.92);
+}
+
+.cmi-control-button:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.32);
+}
+
+.cmi-control-button:active {
+    background-color: rgba(255, 255, 255, 0.07);
+}
+
+.cmi-control-disabled {
+    opacity: 0.3;
 }

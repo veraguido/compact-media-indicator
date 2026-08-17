@@ -6,6 +6,7 @@
 import GObject from 'gi://GObject';
 import St from 'gi://St';
 import Clutter from 'gi://Clutter';
+import GdkPixbuf from 'gi://GdkPixbuf';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import Pango from 'gi://Pango';
@@ -100,6 +101,7 @@ class MediaIndicator extends PanelMenu.Button {
         this._lastArtUrl = null;
         this._popupArtToken = 0;
         this._popupArtIcon = null;
+        this._popupBgActor = null;
         this._cacheDir = GLib.build_filenamev([GLib.get_user_cache_dir(), 'compact-media-indicator']);
 
         this._box = new St.BoxLayout({
@@ -277,6 +279,8 @@ class MediaIndicator extends PanelMenu.Button {
     }
 
     _openPopup() {
+        // Remove the popup menu's internal padding so our background fills edge-to-edge.
+        this.menu.box.set_style('padding: 0; margin: 0;');
         this._buildPopupContent();
         this.menu.open(true);
     }
@@ -287,28 +291,59 @@ class MediaIndicator extends PanelMenu.Button {
         return new Gio.ThemedIcon({name: 'audio-x-generic-symbolic'});
     }
 
-    // Load the given artUrl into the current popup art icon, guarded by a
-    // token so a slow/late load can't overwrite a newer source's art.
+    // Load the given artUrl into the popup art icon and the popup background.
+    // Token-guarded so a slow/late load can't overwrite a newer source's art.
     _loadPopupArt(url) {
         const icon = this._popupArtIcon;
-        if (!icon)
-            return;
         if (!url) {
-            icon.gicon = this._defaultArtIcon();
+            if (icon)
+                icon.gicon = this._defaultArtIcon();
             return;
         }
         const token = ++this._popupArtToken;
         loadArt(url, this._cacheDir, gicon => {
-            if (token !== this._popupArtToken || this._popupArtIcon !== icon)
-                return; // superseded by a newer build / source
-            icon.gicon = gicon ?? this._defaultArtIcon();
+            if (token !== this._popupArtToken)
+                return;
+            if (icon && this._popupArtIcon === icon)
+                icon.gicon = gicon ?? this._defaultArtIcon();
+            if (gicon instanceof Gio.FileIcon && this._popupBgActor) {
+                const path = gicon.file.get_path();
+                if (path) {
+                    try {
+                        GLib.mkdir_with_parents(this._cacheDir, 0o755);
+                        const src = GdkPixbuf.Pixbuf.new_from_file(path);
+                        // Repeated half-scale / full-scale passes accumulate smooth
+                        // blur without ever producing visible blocks. Each pass
+                        // is equivalent to a small Gaussian, and 6 passes compound
+                        // into a strong, smooth result.
+                        const W = src.get_width();
+                        const H = src.get_height();
+                        const hw = Math.max(1, Math.floor(W / 2));
+                        const hh = Math.max(1, Math.floor(H / 2));
+                        let blur = src;
+                        for (let i = 0; i < 6; i++) {
+                            blur = blur.scale_simple(hw, hh, GdkPixbuf.InterpType.BILINEAR);
+                            blur = blur.scale_simple(W, H, GdkPixbuf.InterpType.BILINEAR);
+                        }
+                        const blurred = blur.scale_simple(300, 300, GdkPixbuf.InterpType.BILINEAR);
+                        const bgPath = GLib.build_filenamev([this._cacheDir, 'popup-bg.jpg']);
+                        blurred.savev(bgPath, 'jpeg', ['quality'], ['85']);
+                        this._popupBgActor.set_style(
+                            `background-image: url("${bgPath}"); ` +
+                            `background-size: cover; background-position: center;`
+                        );
+                    } catch (e) {
+                        logError(e, 'CMI: popup bg failed');
+                    }
+                }
+            }
         });
     }
 
     // A small reactive icon button used for controls and the source switcher.
     _iconButton(iconName, onClick, disabled = false) {
         const btn = new St.Button({
-            style_class: 'cmi-control-button button',
+            style_class: 'cmi-control-button',
             child: new St.Icon({icon_name: iconName, icon_size: 18}),
             reactive: !disabled,
             can_focus: !disabled,
@@ -336,18 +371,50 @@ class MediaIndicator extends PanelMenu.Button {
 
     _buildPopupContent() {
         this.menu.removeAll();
+        this._popupBgActor = null;
 
         const item = new PopupMenu.PopupBaseMenuItem({
             reactive: false,
             can_focus: false,
             style_class: 'cmi-popup',
         });
-        const root = new St.BoxLayout({vertical: true, style_class: 'cmi-popup-root'});
+
+        // BinLayout lets us stack: art background → dark overlay → content.
+        // The background-image (blurred art) is set directly on root — it's the
+        // only actor here that has a reliable non-zero size from its parent.
+        const root = new St.Widget({
+            layout_manager: new Clutter.BinLayout(),
+            style_class: 'cmi-popup-root',
+            x_expand: true,
+            x_align: Clutter.ActorAlign.FILL,
+        });
+        this._popupBgActor = root;
         item.add_child(root);
         this.menu.addMenuItem(item);
 
+        // Dark overlay — sits on top of the background-image to keep text readable.
+        root.add_child(new St.Bin({
+            style_class: 'cmi-popup-overlay',
+            x_align: Clutter.ActorAlign.FILL,
+            y_align: Clutter.ActorAlign.FILL,
+        }));
+
+        // Layer 2: all visible content.
+        const content = new St.BoxLayout({
+            vertical: true,
+            style_class: 'cmi-popup-content',
+            x_expand: true,
+            x_align: Clutter.ActorAlign.FILL,
+            y_align: Clutter.ActorAlign.FILL,
+        });
+        root.add_child(content);
+
         if (this._mpris.playerCount === 0) {
-            root.add_child(new St.Label({text: 'Nothing playing', style_class: 'cmi-info-title'}));
+            content.add_child(new St.Label({
+                text: 'Nothing playing',
+                style_class: 'cmi-info-title',
+                x_align: Clutter.ActorAlign.CENTER,
+            }));
             return;
         }
 
@@ -371,28 +438,30 @@ class MediaIndicator extends PanelMenu.Button {
         }));
         if (count > 1)
             header.add_child(this._iconButton('go-next-symbolic', () => this._switchSource(1)));
-        root.add_child(header);
+        content.add_child(header);
 
         // --- Now playing: art + text ---
         const np = new St.BoxLayout({style_class: 'cmi-info-content'});
-        root.add_child(np);
+        content.add_child(np);
 
         if (this._settings.get_boolean('show-album-art')) {
-            // Start from the default image and load this source's art into it.
-            // Loading per-build (rather than reusing the panel icon's gicon)
-            // ensures the art always matches the source shown, including after
-            // switching sources.
             const artIcon = new St.Icon({
                 gicon: this._defaultArtIcon(),
-                icon_size: 96,
+                icon_size: 80,
                 style_class: 'cmi-info-art',
             });
             this._popupArtIcon = artIcon;
             np.add_child(artIcon);
-            this._loadPopupArt(metadata['mpris:artUrl']);
+        } else {
+            this._popupArtIcon = null;
         }
 
-        const text = new St.BoxLayout({vertical: true, style_class: 'cmi-info-text', x_expand: true});
+        const text = new St.BoxLayout({
+            vertical: true,
+            style_class: 'cmi-info-text',
+            x_expand: true,
+            y_align: Clutter.ActorAlign.CENTER,
+        });
         np.add_child(text);
 
         const title = metadata['xesam:title'];
@@ -406,9 +475,9 @@ class MediaIndicator extends PanelMenu.Button {
             text.add_child(new St.Label({text: String(artistStr), style_class: 'cmi-info-value'}));
         const album = metadata['xesam:album'];
         if (album)
-            text.add_child(new St.Label({text: String(album), style_class: 'cmi-info-value'}));
+            text.add_child(new St.Label({text: String(album), style_class: 'cmi-info-album'}));
 
-        // --- Transport controls for this source ---
+        // --- Transport controls ---
         const controls = new St.BoxLayout({
             style_class: 'cmi-controls',
             x_align: Clutter.ActorAlign.CENTER,
@@ -422,7 +491,11 @@ class MediaIndicator extends PanelMenu.Button {
             () => this._mpris.next(), !caps.canGoNext));
         controls.add_child(this._iconButton('media-playback-stop-symbolic',
             () => this._mpris.stop(), !caps.canControl));
-        root.add_child(controls);
+        content.add_child(controls);
+
+        // Always load art: sets the popup art icon (if shown) and the
+        // background-image on the root layer.
+        this._loadPopupArt(metadata['mpris:artUrl']);
     }
 
     // Rebuild the popup on the next idle (deferred so we never destroy a
@@ -515,6 +588,7 @@ class MediaIndicator extends PanelMenu.Button {
         this._artToken++; // invalidate pending art callbacks
         this._popupArtToken++;
         this._popupArtIcon = null;
+        this._popupBgActor = null;
         if (this._mpris) {
             this._mpris.destroy();
             this._mpris = null;
