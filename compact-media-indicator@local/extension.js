@@ -279,8 +279,10 @@ class MediaIndicator extends PanelMenu.Button {
     }
 
     _openPopup() {
-        // Remove the popup menu's internal padding so our background fills edge-to-edge.
+        // Strip padding from every popup container layer so the background fills edge-to-edge.
         this.menu.box.set_style('padding: 0; margin: 0;');
+        if (this.menu.actor)
+            this.menu.actor.set_style('padding: 0; margin: 0;');
         this._buildPopupContent();
         this.menu.open(true);
     }
@@ -378,6 +380,7 @@ class MediaIndicator extends PanelMenu.Button {
             can_focus: false,
             style_class: 'cmi-popup',
         });
+        item.set_style('padding: 0; margin: 0;');
 
         // BinLayout lets us stack: art background → dark overlay → content.
         // The background-image (blurred art) is set directly on root — it's the

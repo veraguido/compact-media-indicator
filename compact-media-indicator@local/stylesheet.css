@@ -33,13 +33,14 @@
 
 /* ── Popup root: receives the album art as background-image via JS ── */
 .cmi-popup-root {
-    border-radius: 12px;
+    border-radius: 14px;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18), inset 0 0 0 2px rgba(0, 0, 0, 0.25);
 }
 
 /* ── Dark overlay that dims the art so text stays readable ── */
 .cmi-popup-overlay {
     background-color: rgba(6, 6, 14, 0.50);
-    border-radius: 12px;
+    border-radius: 14px;
 }
 
 /* ── Content layer: padding + spacing for everything inside ── */
@@ -58,6 +59,7 @@
     font-weight: bold;
     color: rgba(255, 255, 255, 0.8);
     font-size: 0.82em;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9), 0 0 10px rgba(0, 0, 0, 0.7);
 }
 
 /* ── Now-playing row ── */
@@ -80,16 +82,19 @@
     font-size: 1.1em;
     color: white;
     padding-bottom: 2px;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.95), 0 0 12px rgba(0, 0, 0, 0.8);
 }
 
 .cmi-info-value {
     color: rgba(255, 255, 255, 0.75);
     font-size: 0.95em;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.95), 0 0 12px rgba(0, 0, 0, 0.8);
 }
 
 .cmi-info-album {
     color: rgba(255, 255, 255, 0.48);
     font-size: 0.88em;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.95), 0 0 12px rgba(0, 0, 0, 0.8);
 }
 
 /* ── Transport controls ── */
