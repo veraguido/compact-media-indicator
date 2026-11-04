@@ -284,7 +284,7 @@ class MediaIndicator extends PanelMenu.Button {
         if (this.menu.actor)
             this.menu.actor.set_style('padding: 0; margin: 0;');
         this._buildPopupContent();
-        this.menu.open(true);
+        this.menu.open();
     }
 
     // Placeholder shown when a source exposes no album art (or it fails to
@@ -404,12 +404,12 @@ class MediaIndicator extends PanelMenu.Button {
 
         // Layer 2: all visible content.
         const content = new St.BoxLayout({
-            vertical: true,
             style_class: 'cmi-popup-content',
             x_expand: true,
             x_align: Clutter.ActorAlign.FILL,
             y_align: Clutter.ActorAlign.FILL,
         });
+        content.layout_manager.orientation = Clutter.Orientation.VERTICAL;
         root.add_child(content);
 
         if (this._mpris.playerCount === 0) {
@@ -460,11 +460,11 @@ class MediaIndicator extends PanelMenu.Button {
         }
 
         const text = new St.BoxLayout({
-            vertical: true,
             style_class: 'cmi-info-text',
             x_expand: true,
             y_align: Clutter.ActorAlign.CENTER,
         });
+        text.layout_manager.orientation = Clutter.Orientation.VERTICAL;
         np.add_child(text);
 
         const title = metadata['xesam:title'];
